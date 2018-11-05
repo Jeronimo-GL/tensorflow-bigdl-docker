@@ -3,21 +3,26 @@
 # Variables
 SHELL ?= /bin/bash
 
-# Spark
+# Container related
+PROJECT_BASE=/opt/project
+
+# Spark related
 BASE_DIRECTORY=/usr/local
 SPARK_VERSION=spark-2.1.2-bin-hadoop2.7
 SPARK_PATH=$(BASE_DIRECTORY)/$(SPARK_VERSION)
 
 # BigDL
 BIGDL_DIST=/opt/bigdl
+BIGDL_PY_ZIP=$(BIGDL_DIST)/lib/bigdl-0.7.0-python-api.zip
+BIGDL_JAR=$(BIGDL_DIST)/lib/bigdl-SPARK_2.1-0.7.0-jar-with-dependencies.jar
+BIGDL_CONF=$(BIGDL_DIST)/conf/spark-bigdl.conf
+JUPYTER_NET_OPTS="--ip=0.0.0.0 --allow-root --port=8080"
+JUPYTER_CALL="notebook --notebook-dir=/opt/project/notebooks --no-browser --NotebookApp.token='' "
+JUPYTER_OPTS= $(JUPYTER_CALL)$(JUPYTER_NET_OPTS)
 
-# Docker
+# Docker relater
 TARGET_IMAGE=jeronimogl/tf2bigdl:2.1.2
 CONTAINER_NAME=spark_tf
-
-# Container
-PROJECT_BASE=/opt/project
-TB_LOGDIR=/opt/logdir
 
 # Generic
 TIMESTAMP=$(shell date +"%Y%m%d%H%M%S")
@@ -38,9 +43,27 @@ python-shell: ## Start python3
 
 spark-shell: ## Starts a spark-shell console
 	@docker exec -ti \
-		${CONTAINER_NAME}\
-		${SPARK_PATH}/bin/spark-shell
+		${CONTAINER_NAME} \
+		${SPARK_PATH}/bin/spark-shell \
+		  --properties-file ${BIGDL_CONF} \
+		  --jars ${BIGDL_JAR} \
+		  --conf spark.driver.extraJavaOptions=-Dderby.system.home=/tmp \
+		  --conf spark.sql.warehouse.dir=/tmp \
+		  --conf spark.driver.extraClassPath=${BIGDL_JAR} \
+		  --conf spark.executor.extraClassPath=${BIGDL_JAR}
 
+pyspark: ## Starts a spark-shell console
+	@docker exec -ti \
+		-e PYTHONPATH=${BIGDL_PY_ZIP} \
+		${CONTAINER_NAME}\
+		${SPARK_PATH}/bin/pyspark \
+		  --properties-file ${BIGDL_CONF} \
+		  --py-files ${BIGDL_PY_ZIP} \
+		  --jars ${BIGDL_JAR} \
+		  --conf spark.driver.extraJavaOptions=-Dderby.system.home=/tmp \
+		  --conf spark.sql.warehouse.dir=/tmp \
+		  --conf spark.driver.extraClassPath=${BIGDL_JAR} \
+		  --conf spark.executor.extraClassPath=${BIGDL_JAR}
 
 shell:  ## Shell to the container
 	@docker exec -ti \
@@ -64,14 +87,27 @@ docker-stop: ## Stops the container
 jupyter: ## launches jupyter notebook
 	@echo http://localhost:8080;
 	@docker exec -ti \
+		-e PYSPARK_DRIVER_PYTHON=jupyter \
+		-e PYSPARK_DRIVER_PYTHON_OPTS=${JUPYTER_OPTS} \
+		-e PYTHONPATH=${BIGDL_PY_ZIP} \
 		${CONTAINER_NAME} \
-		jupyter notebook --ip=0.0.0.0 --port=8080 --allow-root --notebook-dir=${PROJECT_BASE}/notebooks --NotebookApp.token=
+		${SPARK_PATH}/bin/pyspark \
+		  --properties-file ${BIGDL_CONF} \
+		  --py-files ${BIGDL_PY_ZIP} \
+		  --jars ${BIGDL_JAR} \
+		  --conf spark.driver.extraJavaOptions=-Dderby.system.home=/tmp \
+		  --conf spark.sql.warehouse.dir=/tmp \
+		  --conf spark.driver.extraClassPath=${BIGDL_JAR} \
+		  --conf spark.executor.extraClassPath=${BIGDL_JAR} \
+		  --conf spark.sql.catalogImplementation='in-memory'
+
 
 tensorboard: ## Starts tensorboard
 	@echo http://localhost:6006;
 	@docker exec -ti \
 		${CONTAINER_NAME} \
-		tensorboard --logdir ${TB_LOGDIR}
+		tensorboard --logdir  models/iris-graph/session
+
 
 sbt-build: ## Builds the JAR file
 	@docker exec -ti \
