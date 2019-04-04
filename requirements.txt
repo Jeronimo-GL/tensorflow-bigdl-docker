@@ -1,0 +1,8 @@
+tensorflow
+scikit-learn
+pandas
+requests
+jupyter
+pyspark
+BigDL
+matplotlib
