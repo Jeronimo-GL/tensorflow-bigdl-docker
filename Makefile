@@ -21,7 +21,7 @@ JUPYTER_CALL="notebook --notebook-dir=/opt/project/notebooks --no-browser --Note
 JUPYTER_OPTS= $(JUPYTER_CALL)$(JUPYTER_NET_OPTS)
 
 # Docker relater
-TARGET_IMAGE=jeronimogl/tf2bigdl:2.1.2
+TARGET_IMAGE=jeronimogl/tf2bigdl:2.3.3
 CONTAINER_NAME=spark_tf
 
 # Generic
