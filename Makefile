@@ -8,13 +8,13 @@ PROJECT_BASE=/opt/project
 
 # Spark related
 BASE_DIRECTORY=/usr/local
-SPARK_VERSION=spark-2.1.2-bin-hadoop2.7
+SPARK_VERSION=spark-2.3.3-bin-hadoop2.7
 SPARK_PATH=$(BASE_DIRECTORY)/$(SPARK_VERSION)
 
 # BigDL
 BIGDL_DIST=/opt/bigdl
-BIGDL_PY_ZIP=$(BIGDL_DIST)/lib/bigdl-0.7.0-python-api.zip
-BIGDL_JAR=$(BIGDL_DIST)/lib/bigdl-SPARK_2.1-0.7.0-jar-with-dependencies.jar
+BIGDL_PY_ZIP=$(BIGDL_DIST)/lib/bigdl-0.9.0-python-api.zip
+BIGDL_JAR=$(BIGDL_DIST)/lib/bigdl-SPARK_2.3-0.9.0-jar-with-dependencies.jar
 BIGDL_CONF=$(BIGDL_DIST)/conf/spark-bigdl.conf
 JUPYTER_NET_OPTS="--ip=0.0.0.0 --allow-root --port=8080"
 JUPYTER_CALL="notebook --notebook-dir=/opt/project/notebooks --no-browser --NotebookApp.token='' "
@@ -74,12 +74,16 @@ docker-start: ## Start the container
 	@docker run -d -ti \
 		--rm \
 		--name ${CONTAINER_NAME} \
+		--net=host \
 		-p 8080:8080 \
+		-p 8888:8888 \
 		-p 4040:4040 \
 		-p 6006:6006 \
 		-v ${PWD}:${PROJECT_BASE} \
 		${TARGET_IMAGE}
 
+
+# --allow-root
 docker-stop: ## Stops the container
 	@docker stop \
 		${CONTAINER_NAME} 
@@ -100,7 +104,11 @@ jupyter: ## launches jupyter notebook
 		  --conf spark.driver.extraClassPath=${BIGDL_JAR} \
 		  --conf spark.executor.extraClassPath=${BIGDL_JAR} \
 		  --conf spark.sql.catalogImplementation='in-memory'
-
+lab: ## Launches jupyter-lab
+	@docker exec -ti \
+		${CONTAINER_NAME} \
+		jupyter-lab \
+		--allow-root
 
 tensorboard: ## Starts tensorboard
 	@echo http://localhost:6006;

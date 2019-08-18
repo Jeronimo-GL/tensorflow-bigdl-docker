@@ -2,7 +2,7 @@ tensorflow
 scikit-learn
 pandas
 requests
-jupyter
+jupyterlab
 pyspark
 BigDL
 matplotlib

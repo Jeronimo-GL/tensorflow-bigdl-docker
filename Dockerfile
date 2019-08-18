@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:19.04
 
 RUN apt-get update; \
     apt-get install -y wget unzip gcc vim
@@ -27,9 +27,9 @@ RUN apt-get -y install sbt
     
 
 # Install spark
-ENV SPARK_URL=https://archive.apache.org/dist/spark/spark-2.1.2/spark-2.1.2-bin-hadoop2.7.tgz
-ENV SPARK_FILE=spark-2.1.2-bin-hadoop2.7.tgz
-ENV SPARK_VERSION=spark-2.1.2-bin-hadoop2.7
+ENV SPARK_URL=https://archive.apache.org/dist/spark/spark-2.3.3/spark-2.3.3-bin-hadoop2.7.tgz
+ENV SPARK_FILE=spark-2.3.3-bin-hadoop2.7.tgz
+ENV SPARK_VERSION=spark-2.3.3-bin-hadoop2.7
 
 RUN wget ${SPARK_URL}; \
     tar -xvf ${SPARK_FILE}; \
@@ -40,8 +40,8 @@ RUN wget ${SPARK_URL}; \
     
     
 # Install bigDL
-ENV BIGDL_ZIP=dist-spark-2.1.1-scala-2.11.8-all-0.7.0-dist.zip
-ENV BIGDL_URL=https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.1.1-scala-2.11.8-all/0.7.0/${BIGDL_ZIP}
+ENV BIGDL_ZIP=dist-spark-2.3.1-scala-2.11.8-all-0.9.0-dist.zip
+ENV BIGDL_URL=https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-2.3.1-scala-2.11.8-all/0.9.0/${BIGDL_ZIP}
 
 RUN wget ${BIGDL_URL};  \
      unzip ${BIGDL_ZIP} -d /opt/bigdl; \
@@ -65,7 +65,6 @@ RUN pip install -r requirements.txt
 RUN pip install --upgrade toree; \
 	jupyter toree install --spark_home=/usr/local/spark --sys-prefix ;\
 	pip install notebook
-
 
 WORKDIR /opt/project
 
