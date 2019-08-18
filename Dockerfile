@@ -66,5 +66,7 @@ RUN pip install --upgrade toree; \
 	jupyter toree install --spark_home=/usr/local/spark --sys-prefix ;\
 	pip install notebook
 
+
+RUN beakerx install
 WORKDIR /opt/project
 

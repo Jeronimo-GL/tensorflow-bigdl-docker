@@ -75,7 +75,6 @@ docker-start: ## Start the container
 		--rm \
 		--name ${CONTAINER_NAME} \
 		--net=host \
-		-p 8080:8080 \
 		-p 8888:8888 \
 		-p 4040:4040 \
 		-p 6006:6006 \
@@ -88,27 +87,12 @@ docker-stop: ## Stops the container
 	@docker stop \
 		${CONTAINER_NAME} 
 
-jupyter: ## launches jupyter notebook
-	@echo http://localhost:8080;
-	@docker exec -ti \
-		-e PYSPARK_DRIVER_PYTHON=jupyter \
-		-e PYSPARK_DRIVER_PYTHON_OPTS=${JUPYTER_OPTS} \
-		-e PYTHONPATH=${BIGDL_PY_ZIP} \
-		${CONTAINER_NAME} \
-		${SPARK_PATH}/bin/pyspark \
-		  --properties-file ${BIGDL_CONF} \
-		  --py-files ${BIGDL_PY_ZIP} \
-		  --jars ${BIGDL_JAR} \
-		  --conf spark.driver.extraJavaOptions=-Dderby.system.home=/tmp \
-		  --conf spark.sql.warehouse.dir=/tmp \
-		  --conf spark.driver.extraClassPath=${BIGDL_JAR} \
-		  --conf spark.executor.extraClassPath=${BIGDL_JAR} \
-		  --conf spark.sql.catalogImplementation='in-memory'
 lab: ## Launches jupyter-lab
 	@docker exec -ti \
 		${CONTAINER_NAME} \
-		jupyter-lab \
-		--allow-root
+		jupyter lab \
+		--allow-root \
+		--notebook-dir=/opt/project/notebooks
 
 tensorboard: ## Starts tensorboard
 	@echo http://localhost:6006;
