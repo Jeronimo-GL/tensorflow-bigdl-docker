@@ -8,21 +8,24 @@ PROJECT_BASE=/opt/project
 
 # Spark related
 BASE_DIRECTORY=/usr/local
-SPARK_VERSION=spark-2.3.3-bin-hadoop2.7
+SPARK_VERSION=spark-2.2.2-bin-hadoop2.7
 SPARK_PATH=$(BASE_DIRECTORY)/$(SPARK_VERSION)
+
+# Graphframes
+GRAPHFRAMES_PACKAGE=graphframes:graphframes:0.6.0-spark2.2-s_2.11
 
 # BigDL
 BIGDL_DIST=/opt/bigdl
-BIGDL_PY_ZIP=$(BIGDL_DIST)/lib/bigdl-0.9.0-python-api.zip
-BIGDL_JAR=$(BIGDL_DIST)/lib/bigdl-SPARK_2.3-0.9.0-jar-with-dependencies.jar
+BIGDL_PY_ZIP=$(BIGDL_DIST)/lib/bigdl-0.10.0-python-api.zip
+BIGDL_JAR=$(BIGDL_DIST)/lib/bigdl-SPARK_2.2-0.10.0-jar-with-dependencies.jar
 BIGDL_CONF=$(BIGDL_DIST)/conf/spark-bigdl.conf
 JUPYTER_NET_OPTS="--ip=0.0.0.0 --allow-root --port=8080"
 JUPYTER_CALL="notebook --notebook-dir=/opt/project/notebooks --no-browser --NotebookApp.token='' "
 JUPYTER_OPTS= $(JUPYTER_CALL)$(JUPYTER_NET_OPTS)
 
 # Docker relater
-TARGET_IMAGE=jeronimogl/tf2bigdl:2.3.3
-CONTAINER_NAME=spark_tf
+TARGET_IMAGE=jeronimogl/tf2bigdl:2.2.2
+CONTAINER_NAME=spark_22
 
 # Generic
 TIMESTAMP=$(shell date +"%Y%m%d%H%M%S")
@@ -46,7 +49,8 @@ spark-shell: ## Starts a spark-shell console
 		${CONTAINER_NAME} \
 		${SPARK_PATH}/bin/spark-shell \
 		  --properties-file ${BIGDL_CONF} \
-		  --jars ${BIGDL_JAR} \
+		  --jars ${BIGDL_JAR}  \
+		  --packages ${GRAPHFRAMES_PACKAGE} \
 		  --conf spark.driver.extraJavaOptions=-Dderby.system.home=/tmp \
 		  --conf spark.sql.warehouse.dir=/tmp \
 		  --conf spark.driver.extraClassPath=${BIGDL_JAR} \
@@ -74,25 +78,34 @@ docker-start: ## Start the container
 	@docker run -d -ti \
 		--rm \
 		--name ${CONTAINER_NAME} \
-		--net=host \
-		-p 8888:8888 \
+		-p 8080:8080 \
 		-p 4040:4040 \
 		-p 6006:6006 \
 		-v ${PWD}:${PROJECT_BASE} \
 		${TARGET_IMAGE}
 
-
-# --allow-root
 docker-stop: ## Stops the container
 	@docker stop \
 		${CONTAINER_NAME} 
 
-lab: ## Launches jupyter-lab
+jupyter: ## launches jupyter notebook
+	@echo http://localhost:8080;
 	@docker exec -ti \
+		-e PYSPARK_DRIVER_PYTHON=jupyter \
+		-e PYSPARK_DRIVER_PYTHON_OPTS=${JUPYTER_OPTS} \
+		-e PYTHONPATH=${BIGDL_PY_ZIP} \
 		${CONTAINER_NAME} \
-		jupyter lab \
-		--allow-root \
-		--notebook-dir=/opt/project/notebooks
+		${SPARK_PATH}/bin/pyspark \
+		  --properties-file ${BIGDL_CONF} \
+		  --py-files ${BIGDL_PY_ZIP} \
+		  --jars ${BIGDL_JAR} \
+		  --packages ${GRAPHFRAMES_PACKAGE} \
+		  --conf spark.driver.extraJavaOptions=-Dderby.system.home=/tmp \
+		  --conf spark.sql.warehouse.dir=/tmp \
+		  --conf spark.driver.extraClassPath=${BIGDL_JAR} \
+		  --conf spark.executor.extraClassPath=${BIGDL_JAR} \
+		  --conf spark.sql.catalogImplementation='in-memory'
+
 
 tensorboard: ## Starts tensorboard
 	@echo http://localhost:6006;

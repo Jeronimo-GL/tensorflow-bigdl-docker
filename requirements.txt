@@ -1,11 +1,8 @@
-tensorflow==2.0.0-beta1 
+tensorflow
 scikit-learn
 pandas
 requests
-jupyterlab
+jupyter
 pyspark
 BigDL
 matplotlib
-seaborn
-beakerx
-ipywidgets
