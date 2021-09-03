@@ -21,7 +21,7 @@ JUPYTER_CALL="notebook --notebook-dir=/opt/project/notebooks --no-browser --Note
 JUPYTER_OPTS= $(JUPYTER_CALL)$(JUPYTER_NET_OPTS)
 
 # Docker relater
-TARGET_IMAGE=jeronimogl/tf2bigdl:2.3.3
+TARGET_IMAGE=jeronimogl/tf2bigdl:2.4.8
 CONTAINER_NAME=spark_tf
 
 # Generic
@@ -108,6 +108,6 @@ sbt-build: ## Builds the JAR file
 
 
 docker-build:  ## Build the docker images
-	docker build -t ${TARGET_IMAGE} .
+	docker build --no-cache -t ${TARGET_IMAGE} .
 
 
