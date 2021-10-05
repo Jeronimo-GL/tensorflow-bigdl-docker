@@ -39,7 +39,8 @@ RUN wget ${SPARK_URL}; \
     export SPARK_HOME=/usr/local/spark; \
     rm ${SPARK_FILE};
     
-    
+
+
 # Install bigDL
 ENV BIGDL_ZIP=dist-spark-3.0.0-scala-2.12.10-all-0.13.0-dist.zip
 ENV BIGDL_URL=https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-3.0.0-scala-2.12.10-all/0.13.0/${BIGDL_ZIP}
@@ -61,9 +62,19 @@ RUN pip install -r requirements.txt
 
 # Instal toree for jupyter
 RUN pip install --upgrade toree; \
-	jupyter toree install --spark_home=/usr/local/spark --sys-prefix ;\
+    jupyter toree install \
+    --interpreters=Scala,SQL \
+    --spark_home=/usr/local/spark --sys-prefix ;\
 	pip install notebook
 
+ENV POLYNOTE_URL=https://github.com/polynote/polynote/releases/download/0.4.2/polynote-dist.tar.gz
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+RUN cd /opt; \
+    wget ${POLYNOTE_URL}; \
+    tar -zxvpf polynote-dist.tar.gz; \
+    rm polynote-dist.tar.gz; \
+    cd polynote; \
+    pip3 install -r requirements.txt;
 
 RUN beakerx install
 WORKDIR /opt/project

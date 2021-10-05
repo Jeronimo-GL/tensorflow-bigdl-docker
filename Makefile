@@ -94,6 +94,12 @@ lab: ## Launches jupyter-lab
 		--allow-root \
 		--notebook-dir=/opt/project/notebooks
 
+polynote: ## Launches polynote
+	@docker exec -ti \
+		${CONTAINER_NAME} \
+		python3 /opt/polynote/polynote.py
+
+
 tensorboard: ## Starts tensorboard
 	@echo http://localhost:6006;
 	@docker exec -ti \
@@ -108,6 +114,6 @@ sbt-build: ## Builds the JAR file
 
 
 docker-build:  ## Build the docker images
-	docker build --no-cache -t ${TARGET_IMAGE} .
+	docker build  -t ${TARGET_IMAGE} .
 
 
