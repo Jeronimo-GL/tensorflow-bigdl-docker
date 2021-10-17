@@ -7,18 +7,14 @@ SHELL ?= /bin/bash
 PROJECT_BASE=/opt/project
 
 # Spark related
-BASE_DIRECTORY=/usr/local
-SPARK_VERSION=spark-2.3.3-bin-hadoop2.7
-SPARK_PATH=$(BASE_DIRECTORY)/$(SPARK_VERSION)
+SPARK_PATH=/usr/local/spark
 
 # BigDL
 BIGDL_DIST=/opt/bigdl
-BIGDL_PY_ZIP=$(BIGDL_DIST)/lib/bigdl-0.9.0-python-api.zip
-BIGDL_JAR=$(BIGDL_DIST)/lib/bigdl-SPARK_2.3-0.9.0-jar-with-dependencies.jar
+BIGDL_PY_ZIP=$(BIGDL_DIST)/lib/bigdl-0.13.0-python-api.zip
+BIGDL_JAR=$(BIGDL_DIST)/lib/bigdl-SPARK_3.0-0.13.0-jar-with-dependencies.jar
 BIGDL_CONF=$(BIGDL_DIST)/conf/spark-bigdl.conf
-JUPYTER_NET_OPTS="--ip=0.0.0.0 --allow-root --port=8080"
-JUPYTER_CALL="notebook --notebook-dir=/opt/project/notebooks --no-browser --NotebookApp.token='' "
-JUPYTER_OPTS= $(JUPYTER_CALL)$(JUPYTER_NET_OPTS)
+
 
 # Docker relater
 TARGET_IMAGE=jeronimogl/tf2bigdl:2.4.8
@@ -114,6 +110,6 @@ sbt-build: ## Builds the JAR file
 
 
 docker-build:  ## Build the docker images
-	docker build  -t ${TARGET_IMAGE} .
+	docker build -t ${TARGET_IMAGE} .
 
 

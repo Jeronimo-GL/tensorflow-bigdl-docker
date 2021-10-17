@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:21.10
 
 RUN apt-get update; \
     apt-get install -y wget unzip gcc vim
@@ -10,13 +10,14 @@ RUN apt-get install -y openjdk-11-jdk
 
 
 # Install Scala
-ENV SCALA_DEB=scala-2.12.10.deb
+ENV SCALA_DEB=scala-2.12.15.deb
 ENV SCALA_URL=www.scala-lang.org/files/archive/${SCALA_DEB}
 
 RUN  apt-get remove scala-library scala; \
      wget ${SCALA_URL}; \
      dpkg -i ${SCALA_DEB}; \
      rm ${SCALA_DEB}
+
 
 # Install sbt
 RUN apt-get -y install gnupg2
@@ -31,12 +32,13 @@ RUN apt-get -y install sbt
 ENV SPARK_URL=https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz  
 ENV SPARK_FILE=spark-3.1.2-bin-hadoop2.7.tgz
 ENV SPARK_VERSION=spark-3.1.2-bin-hadoop2.7
+ENV SPARK_DEST_DIR=/usr/local/spark
 
 RUN wget ${SPARK_URL}; \
     tar -xvf ${SPARK_FILE}; \
     mv ${SPARK_VERSION} /usr/local/; \
-    ln -s /usr/local/${SPARK_VERSION}/ /usr/local/spark; \
-    export SPARK_HOME=/usr/local/spark; \
+    ln -s /usr/local/${SPARK_VERSION}/ $SPARK_DEST_DIR; \
+    export SPARK_HOME=$SPARK_DEST_DIR; \
     rm ${SPARK_FILE};
     
 
@@ -48,7 +50,7 @@ ENV BIGDL_URL=https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spar
 RUN wget ${BIGDL_URL};  \
      unzip ${BIGDL_ZIP} -d /opt/bigdl; \
      rm ${BIGDL_ZIP}; \
-     cp /opt/bigdl/lib/* /usr/local/spark/jars/; \
+     cp /opt/bigdl/lib/* $SPARK_DEST_DIR/jars/; \
      export BIGDL_HOME=/opt/bigdl
 
 # Install python
@@ -64,8 +66,10 @@ RUN pip install -r requirements.txt
 RUN pip install --upgrade toree; \
     jupyter toree install \
     --interpreters=Scala,SQL \
-    --spark_home=/usr/local/spark --sys-prefix ;\
-	pip install notebook
+    --spark_home=$SPARK_DEST_DIR ; \
+    pip install notebook ; \
+    pip install --upgrade pyspark
+
 
 ENV POLYNOTE_URL=https://github.com/polynote/polynote/releases/download/0.4.2/polynote-dist.tar.gz
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
