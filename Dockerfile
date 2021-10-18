@@ -6,7 +6,8 @@ RUN apt-get update; \
 RUN cd ~
 
 # Install java
-RUN apt-get install -y openjdk-11-jdk
+RUN apt-get install -y openjdk-8-jdk
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 
 # Install Scala
@@ -17,7 +18,7 @@ RUN  apt-get remove scala-library scala; \
      wget ${SCALA_URL}; \
      dpkg -i ${SCALA_DEB}; \
      rm ${SCALA_DEB}
-
+ENV SCALA_HOME=/usr/share/scala
 
 # Install sbt
 RUN apt-get -y install gnupg2
@@ -40,6 +41,7 @@ RUN wget ${SPARK_URL}; \
     ln -s /usr/local/${SPARK_VERSION}/ $SPARK_DEST_DIR; \
     export SPARK_HOME=$SPARK_DEST_DIR; \
     rm ${SPARK_FILE};
+ENV SPARK_HOME=$SPARK_DEST_DIR
     
 
 
@@ -63,7 +65,8 @@ RUN pip install -r requirements.txt
 
 
 # Instal toree for jupyter
-RUN pip install --upgrade toree; \
+ENV TOREE_URL=https://dist.apache.org/repos/dist/dev/incubator/toree/0.5.0-incubating-rc4/toree-pip/toree-0.5.0.tar.gz
+RUN pip install --upgrade $TOREE_URL; \
     jupyter toree install \
     --interpreters=Scala,SQL \
     --spark_home=$SPARK_DEST_DIR ; \
@@ -72,7 +75,6 @@ RUN pip install --upgrade toree; \
 
 
 ENV POLYNOTE_URL=https://github.com/polynote/polynote/releases/download/0.4.2/polynote-dist.tar.gz
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 RUN cd /opt; \
     wget ${POLYNOTE_URL}; \
     tar -zxvpf polynote-dist.tar.gz; \
@@ -80,6 +82,9 @@ RUN cd /opt; \
     cd polynote; \
     pip3 install -r requirements.txt;
 
+
 RUN beakerx install
+
+ENV PATH=${PATH}:$JAVA_HOME:$SCALA_HOME:$SPARK_HOME
 WORKDIR /opt/project
 
